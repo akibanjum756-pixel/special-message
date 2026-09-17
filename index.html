@@ -24,16 +24,99 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.12;ba
 .g1{width:220px;height:220px;background:#ff1f78;top:-100px;left:-80px;animation:drift 9s ease-in-out infinite alternate}
 .g2{width:260px;height:260px;background:#6d35ff;right:-100px;bottom:-100px;animation:drift 11s ease-in-out infinite alternate-reverse}
 
+/* --- STEP 1: NAME INPUT SCREEN --- */
+.name-screen {
+  position: relative;
+  z-index: 20;
+  width: min(400px, 100%);
+  padding: 30px 20px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 28px;
+  background: linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.035));
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  box-shadow: 0 20px 60px rgba(0,0,0,.65);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.name-screen h2 {
+  font-size: 22px;
+  margin-bottom: 8px;
+  color: #ffb8d1;
+}
+
+.name-screen p {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 20px;
+}
+
+.name-input-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.name-input-box input {
+  width: 100%;
+  padding: 12px 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.25);
+  background: rgba(0,0,0,.4);
+  color: #fff;
+  font-size: 15px;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.name-input-box input:focus {
+  border-color: #ff6da7;
+}
+
+.enter-btn {
+  background: linear-gradient(135deg,#ff65a7,#ff176d);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 12px 30px;
+  border-radius: 20px;
+  border: 0;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(255,23,109,.4);
+  transition: transform 0.2s ease;
+}
+
+.enter-btn:active {
+  transform: scale(0.95);
+}
+
+.name-screen.hide {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.9);
+  pointer-events: none;
+  display: none;
+}
+
 /* --- ENVELOPE CONTAINER --- */
 .envelope-container {
   position: relative;
   width: min(680px, 100%);
   min-height: 420px;
-  display: flex;
+  display: none; /* Hidden until name entered */
   flex-direction: column;
   align-items: center;
   justify-content: center;
   perspective: 1000px;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.envelope-container.show {
+  display: flex;
+  opacity: 1;
 }
 
 .envelope-wrapper {
@@ -90,6 +173,22 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.12;ba
   filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3));
 }
 
+.envelope-sender {
+  position: absolute;
+  bottom: 12px;
+  right: 16px;
+  z-index: 6;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px 10px;
+  border-radius: 12px;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  letter-spacing: 0.5px;
+}
+
 .click-hint {
   margin-top: 25px;
   font-size: 14px;
@@ -104,9 +203,10 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.12;ba
   transform: rotateX(180deg);
 }
 
-.envelope-wrapper.open-flap .heart-seal {
+.envelope-wrapper.open-flap .heart-seal,
+.envelope-wrapper.open-flap .envelope-sender {
   opacity: 0;
-  transform: translate(-50%, -50%) scale(0.2);
+  transition: opacity 0.3s ease;
 }
 
 .envelope-wrapper.fade-out {
@@ -175,7 +275,7 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
 .success .orbit{width:90px;height:90px;margin-bottom:15px}
 .success h2{font-size:clamp(36px,8.5vw,56px);line-height:1;margin-bottom:12px;background:linear-gradient(90deg,#fff,#ff9fc4,#fff);background-size:220% auto;-webkit-background-clip:text;color:transparent;animation:shine 3s linear infinite;min-height:56px}
 .success p{font-size:16px;line-height:1.6;color:#ffe3ed;min-height:50px;white-space:pre-line}
-.signature{margin-top:16px;font-size:10px;color:rgba(255,220,235,.4);opacity:0;transition:opacity 1s ease}
+.signature{margin-top:16px;font-size:11px;color:rgba(255,220,235,.5);opacity:0;transition:opacity 1s ease}
 .signature.show{opacity:1}
 
 .custom-msg-box{margin-top:20px;display:flex;flex-direction:column;gap:10px;align-items:center;opacity:0;transition:opacity 1s ease}
@@ -214,13 +314,25 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
 <body>
 <div class="aurora"></div><div class="glow g1"></div><div class="glow g2"></div>
 
-<div class="envelope-container">
+<!-- STEP 1: Name Input Screen -->
+<div class="name-screen" id="nameScreen">
+  <h2>Welcome! ✨</h2>
+  <p>Please enter your name to unlock the message</p>
+  <div class="name-input-box">
+    <input type="text" id="visitorName" placeholder="Enter your name here..." autocomplete="off">
+    <button class="enter-btn" id="enterBtn">Enter ❤️</button>
+  </div>
+</div>
+
+<!-- STEP 2: Envelope & Letter Container -->
+<div class="envelope-container" id="envelopeContainer">
   <!-- Envelope Area -->
   <div class="envelope-wrapper" id="envelopeWrapper">
     <div class="envelope">
       <div class="lid"></div>
       <div class="pocket"></div>
       <div class="heart-seal">💌</div>
+      <div class="envelope-sender">Sent by vhuttt 👻</div>
     </div>
   </div>
   <div class="click-hint" id="clickHint">Click to open your letter ✨</div>
@@ -231,7 +343,7 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
     <div class="topline">A tiny secret for Youuuuuuu</div>
     <div class="orbit"><div class="heart">❤️</div></div>
     <div class="badge"><i class="dot"></i> Something special <i class="dot"></i></div>
-    <h1>Hey Sadiya</h1>
+    <h1 id="greetingTitle">Hey Sadiya</h1>
     <p class="message"><span id="typedText"></span><span class="cursor" id="cursor"></span></p>
     <h2 class="question" id="questionText">Will you be mine forever? <span>💍❤️</span></h2>
     <div class="buttons">
@@ -242,7 +354,7 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
   </main>
 </div>
 
-<!-- ২য় পেজ (অভারলে) -->
+<!-- STEP 3: Success Overlay -->
 <section id="successOverlay" class="overlay" aria-hidden="true">
  <div class="success">
   <div class="orbit"><div class="heart">💖</div></div>
@@ -259,7 +371,35 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
 </section>
 
 <script>
-const myWhatsAppNumber = "8801611071097";
+const myWhatsAppNumber = "8801581022291";
+let userName = "Sadiya"; // Default fallback name
+
+const nameScreen = document.getElementById("nameScreen");
+const visitorNameInput = document.getElementById("visitorName");
+const enterBtn = document.getElementById("enterBtn");
+const envelopeContainer = document.getElementById("envelopeContainer");
+const greetingTitle = document.getElementById("greetingTitle");
+
+// Name Input Logic
+enterBtn.addEventListener("click", () => {
+  const enteredValue = visitorNameInput.value.trim();
+  if (enteredValue !== "") {
+    userName = enteredValue;
+  }
+  greetingTitle.textContent = `Hey ${userName}`;
+
+  nameScreen.classList.add("hide");
+  setTimeout(() => {
+    envelopeContainer.classList.add("show");
+  }, 300);
+});
+
+// Allow press Enter key in name field
+visitorNameInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") {
+    enterBtn.click();
+  }
+});
 
 const textToType = "Out of all the people in this world\nmy heart somehow found its home in you 🫠\nI don't want a perfect life—\nI just want a lifetime filled with beautiful moments with you ☺️";
 
@@ -303,7 +443,6 @@ envelopeWrapper.addEventListener("click", function() {
       envelopeWrapper.style.display = "none";
       mainCard.style.display = "block";
       
-      // Force Reflow to ensure layout engine catches state change
       void mainCard.offsetWidth; 
       
       mainCard.classList.add("unfold-show");
@@ -447,7 +586,7 @@ noBtn.addEventListener("touchstart",dodge,{passive:false});
 noBtn.addEventListener("click",dodge);
 
 function sendNotification(extraText="") {
-  const msgContent = extraText ? `Sadiya sent a message: "${extraText}" ❤️` : "Sadiya clicked YES! ❤️";
+  const msgContent = extraText ? `${userName} sent a message: "${extraText}" ❤️` : `${userName} clicked YES! ❤️`;
   fetch("https://formspree.io/f/xeaoqgeq", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
